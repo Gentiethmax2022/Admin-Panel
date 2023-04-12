@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-image: url("../pictures/F1.jpg");
+    background-image: url("../pictures/F2.jpg");
     background-size: cover;
     background-position: center;
   }
@@ -9,12 +9,22 @@ body {
   .login-wrapper {
     width: 500px;
     margin: 100px auto;
-    background-color: rgba(243, 103, 103, 0.5);
+    background-color: rgba(20, 19, 19, 0.9);
     border-radius: 10px;
     padding: 30px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
   }
   
+  h1 {
+    color: #d80a0d; /* Change to your desired color */
+    font-size: 14;
+  }
+  
+  label {
+    color: #e61111; /* Change to your desired color */
+  }
+
+
   h1 {
     text-align: center;
   }
