@@ -1,8 +1,9 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout   
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.shortcuts import render
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import  Response
@@ -28,17 +29,23 @@ class LoginView(APIView):
         password = request.POST['password']
         user = authenticate(request, email=email, password=password)
         if user is not None:
-            login(request, user)
+            login(request, user) 
             auth_data = get_tokens_for_user(request.user)
+
+            # Set session expiry time based on "remember_me" parameter
+            remember_me = request.data.get('remember_me', False)
+            if remember_me:
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE) #type: ignore
+            else:
+                request.session.set_expiry(0)
+
             return Response({'msg': 'Login Success', **auth_data}, status=status.HTTP_200_OK)
         return Response({'msg': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({'msg': 'Successfully Logged out'}, status=status.HTTP_200_OK)
-
 
 
 class ChangePasswordView(APIView):
@@ -50,27 +57,8 @@ class ChangePasswordView(APIView):
         request.user.set_password(serializer.validated_data['new_password'])  #type: ignore
         request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-from django.shortcuts import render
+   
 
-
-def login_view(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me') == 'true'
-
-        user = authenticate(request, email=email, password=password)
-
-        if user is not None:
-            login(request, user)
-            if remember_me:
-                request.session.set_expiry(1209600)  # 2 weeks
-            else:
-                request.session.set_expiry(0)  # session expires when the browser is closed
-            return JsonResponse({'msg': 'Logged in successfully'})
-        else:
-            return JsonResponse({'msg': 'Invalid email or password'}, status=401)
-
-    return JsonResponse({'msg': 'Invalid request method'}, status=405)
+def login(request):
+    return render(request, 'login.html')
 

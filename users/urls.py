@@ -1,11 +1,12 @@
 from django.urls import path
-from .views import RegistrationView, LoginView, LogoutView,ChangePasswordView, login_view
+from .views import RegistrationView, LoginView, LogoutView,ChangePasswordView, login
 from rest_framework_simplejwt import views as jwt_views
 
 app_name = 'users'
 
+
 urlpatterns = [
-    path('login/', login_view, name='login'),
+    path('login/', login, name='login'),
     path('accounts/register', RegistrationView.as_view(), name='register'),
     path('accounts/login', LoginView.as_view(), name='login'),
     path('accounts/logout', LogoutView.as_view(), name='logout'),

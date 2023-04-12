@@ -1,0 +1,63 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url("../pictures/F1.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .login-wrapper {
+    width: 500px;
+    margin: 100px auto;
+    background-color: rgba(243, 103, 103, 0.5);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  }
+  
+  h1 {
+    text-align: center;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 15px;
+    border-radius: 5px;
+    border: none;
+  }
+  
+  input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  
+  #login-button {
+    background-color: #114f11;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 1.7em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  #login-button:hover {
+    background-color: #2e8b57;
+  }
+  
+  @media only screen and (max-width: 600px) {
+    .login-wrapper {
+      width: 90%;
+    }
+  }
