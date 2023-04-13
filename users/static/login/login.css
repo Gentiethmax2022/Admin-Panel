@@ -1,27 +1,27 @@
 body {
     margin: 0;
     padding: 0;
-    background-image: url("../pictures/F2.jpg");
     background-size: cover;
     background-position: center;
-  }
+    background-image: url('/static/pictures/F2.png');
+}
   
   .login-wrapper {
     width: 500px;
     margin: 100px auto;
-    background-color: rgba(20, 19, 19, 0.9);
+    background-color: rgba(153, 188, 79, 0.9);
     border-radius: 10px;
     padding: 30px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
   }
   
   h1 {
-    color: #d80a0d; /* Change to your desired color */
+    color: #040404; /* Change to your desired color */
     font-size: 14;
   }
   
   label {
-    color: #e61111; /* Change to your desired color */
+    color: #060606; /* Change to your desired color */
   }
 
 

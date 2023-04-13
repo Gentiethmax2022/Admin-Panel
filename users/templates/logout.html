@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Logout</title>
+  </head>
+  <body>
+    <h1>Logout</h1>
+    <p>Are you sure you want to log out?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Yes</button>
+    </form>
+  </body>
+</html>

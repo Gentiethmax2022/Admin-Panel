@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django import forms
-from .models import MyUser
+from .models import MyUser, Transaction
 
 
 class UserCreationForm(forms.ModelForm):
@@ -69,3 +69,15 @@ class UserAdmin(BaseUserAdmin):
     
 admin.site.register(MyUser, UserAdmin)
 
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['date', 'payer', 'payee', 'amount', 'category', 'status']
+    list_filter = ('category', 'status')
+    search_fields = ('payer__username', 'payee_username', 'description', 'reference_number')
+    
+
+admin.site.register(Transaction, TransactionAdmin)
+
+
+    
