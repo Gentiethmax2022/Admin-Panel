@@ -8,4 +8,17 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
     
+
+def get_admin_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    # Add admin claims to the access token
+    access_token['is_admin'] = True
+
+    return {
+        'refresh': str(refresh),
+        'access': str(access_token),
+    }
     
+

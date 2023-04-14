@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MyRegistrationView, MyLogoutView, MyChangePasswordView, login, MyLoginView
+from .views import MyRegistrationView, MyLogoutView, MyChangePasswordView, MyLoginView
 from rest_framework_simplejwt import views as jwt_views
 
 app_name = 'users'

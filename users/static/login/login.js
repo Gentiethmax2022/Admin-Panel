@@ -1,4 +1,3 @@
-
 const loginButton = document.getElementById('login-button');
 
 loginButton.addEventListener('click', () => {
@@ -7,7 +6,7 @@ loginButton.addEventListener('click', () => {
   const rememberMe = document.getElementById('remember-me').checked;
 
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/auth/login/');
+  xhr.open('POST', '/accounts/login/');
   xhr.setRequestHeader('Content-Type', 'application/json');
 
   xhr.onreadystatechange = function() {

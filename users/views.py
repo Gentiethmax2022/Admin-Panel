@@ -4,15 +4,21 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
+from django.conf import settings
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import  Response
 from rest_framework.views import APIView
-from .utils import get_tokens_for_user
-from .serializers import RegistrationSerializer, PasswordChangeSerializer #type: ignore
+from .utils import get_tokens_for_user, get_admin_tokens_for_user
+from .serializers import LoginSerializer, RegistrationSerializer
 
 from .forms import PasswordChangeForm
+from .models import MyUser
+
+
 class MyRegistrationView(APIView, TemplateView):
     template_name = 'registration.html'
     success_url = reverse_lazy('login')
@@ -27,42 +33,102 @@ class MyRegistrationView(APIView, TemplateView):
         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return render(request, 'registration.html', {'errors': serializer.errors})
-#     def post(self, request):
-#         serializer = RegistrationSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             messages.success(request, 'User successfully created. Click <a href="{}">here</a> to log in.'.format(reverse('login')))
-#             return redirect('login')  # Change 'login' to the name of your login URL pattern
-#         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         return render(request, 'registration.html', {'errors': serializer.errors})
 
 
+from rest_framework.authtoken.models import Token
+from django.contrib.admin.views.decorators import staff_member_required
 class LoginView(APIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
-        print(request.data)
-        if 'email' not in request.data or 'password' not in request.data:
-            return Response({'msg': 'Credentials missing'}, status=status.HTTP_400_BAD_REQUEST)
-        email = request.POST['email']
-        password = request.POST['password']
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            login(request, user) #type: ignore
-            auth_data = get_tokens_for_user(request.user)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            # Set session expiry time based on "remember_me" parameter
-            remember_me = request.data.get('remember_me', False)
-            if remember_me:
-                request.session.set_expiry(settings.SESSION_COOKIE_AGE) #type: ignore
-            else:
-                request.session.set_expiry(0)
+        user = serializer.validated_data['user']
+        login(request, user)
 
-            return Response({'msg': 'Login Success', **auth_data}, status=status.HTTP_200_OK)
-        return Response({'msg': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user.is_staff:
+            auth_data = get_admin_tokens_for_user(user)
+        else:
+            auth_data = get_tokens_for_user(user)
 
+        remember_me = serializer.validated_data.get('remember_me', False)
+
+        if remember_me:
+            request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+        else:
+            request.session.set_expiry(0)
+
+        return Response({'msg': 'Login Success', **auth_data}, status=status.HTTP_200_OK)
 
 class MyLoginView(LoginView, TemplateView):
     template_name = 'login.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {})
+    
+    def post(self, request, *args, **kwargs):
+        return LoginView.as_view()(request._request)
+
+# Only admins can access the MyLoginView
+staff_member_required(MyLoginView.as_view())
+
+
+
+
+# from django.contrib.admin.views.decorators import staff_member_required
+
+# class LoginView(APIView):
+#     def post(self, request):
+#         print(request.POST)
+#         print(request.data)
+#         if 'email' not in request.data or 'password' not in request.data:
+#             return Response({'msg': 'Credentials missing'}, status=status.HTTP_400_BAD_REQUEST)
+        
+#         email = request.data['email']
+#         password = request.data['password']
+#         print(email, password)
+#         print(request.data)
+#         # check if user with provided email exists
+#         user = MyUser.objects.filter(email=email).first()
+#         print(user)
+#         if user is None:
+#             return Response({'msg': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+#         # Authenticate the user with the provided password
+#         user = authenticate(request, email=email, password=password)
+        
+#         if user is not None:
+#             login(request, user) #type: ignore
+#             if user.is_staff:    #type: ignore
+#                 # if user is an admin, generate admin tokens
+#                 auth_data = get_admin_tokens_for_user(request.user)
+#             else:
+#                 # if user is not an admin, generate regular user tokens
+#                 auth_data = get_tokens_for_user(request.user)
+
+#             # Set session expiry time based on "remember_me" parameter
+#             remember_me = request.data.get('remember_me', False)
+#             if remember_me:
+#                 request.session.set_expiry(settings.SESSION_COOKIE_AGE) #type: ignore
+#             else:
+#                 request.session.set_expiry(0)
+
+#             return Response({'msg': 'Login Success', **auth_data}, status=status.HTTP_200_OK)
+#         return Response({'msg': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+# class MyLoginView(LoginView, TemplateView):
+#     template_name = 'login.html'
+
+#     def get(self, request, *args, **kwargs):
+#         return render(request, self.template_name, {})
+    
+#     def post(self, request, *args, **kwargs):
+#         return LoginView.as_view()(request._request)
+
+# # Only admins can access the MyLoginView
+# staff_member_required(MyLoginView.as_view())
+
 
 
 class LogoutView(APIView):

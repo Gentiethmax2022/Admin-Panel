@@ -145,5 +145,6 @@ AUTH_PROFILE_MODULE = 'users.MyUser'
 AUTH_USER_MODEL = 'users.MyUser'
 
 
-LOGIN_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'
+
 

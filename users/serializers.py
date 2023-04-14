@@ -1,35 +1,60 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
+from .utils import get_admin_tokens_for_user, get_tokens_for_user
+from django.conf import settings
 from .models import MyUser
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    remember_me = serializers.BooleanField(required=False)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        remember_me = data.get('remember_me', False)
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+
+            if user:
+                if user.is_active:
+                    data['user'] = user
+
+                    if user.is_staff:
+                        data['tokens'] = get_admin_tokens_for_user(user)
+                    else:
+                        data['tokens'] = get_tokens_for_user(user)
+
+                    if remember_me:
+                        self.context['request'].session.set_expiry(settings.SESSION_COOKIE_AGE)
+                    else:
+                        self.context['request'].session.set_expiry(0)
+
+                    return data
+                else:
+                    raise serializers.ValidationError('User account is disabled.')
+            else:
+                raise serializers.ValidationError('Unable to log in with provided credentials.')
+
+        else:
+            raise serializers.ValidationError('Must include "email" and "password" fields.')
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(style={"input_type": "password"}, write_only=True)
-    
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = MyUser
-        fields = ['email', 'date_of_birth', 'password', 'password2']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
-        
-    def save(self):
-        user = MyUser(email=self.validated_data['email'], date_of_birth=self.validated_data['date_of_birth']) #type: ignore
-        password = self.validated_data['password']   #type: ignore
-        password2 = self.validated_data['password2'] #type: ignore
-        if password != password2:
-            raise serializers.ValidationError({'password': 'Passwords must match.'})
-        user.set_password(password)
+        fields = ('username', 'email', 'password')
+
+    def create(self, validated_data):
+        user = MyUser.objects.create(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
         user.save()
         return user
     
-
-class PasswordChangeSerializer(serializers.Serializer):
-    current_password = serializers.CharField(style={"input_type": "password"}, required=True)
-    new_password = serializers.CharField(style={"input_type": "password"}, required=True)
-
-    def validate_current_password(self, value):
-        if not self.context['request'].user.check_password(value):
-            raise serializers.ValidationError({'current_password': 'Does not match'})
-        
-        return value
     
